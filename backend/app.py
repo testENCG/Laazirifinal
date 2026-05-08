@@ -21,6 +21,8 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 
 db = SQLAlchemy(app)
+with app.app_context():
+    db.create_all()
 import os, random, string, logging
 from functools import wraps
 
