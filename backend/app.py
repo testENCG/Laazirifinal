@@ -6,30 +6,16 @@ from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import func
 import os
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 import sys
-import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-# Now your import should work
-from config import config
-app = Flask(__name__)
-
-# This is the "Placeholder". 
-# It tells the app: "When you are running, look for a secret called 'DATABASE_URL'."
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
-
-db = SQLAlchemy(app)
-with app.app_context():
-    db.create_all()
 import os, random, string, logging
 from functools import wraps
 
 # Import configuration and utilities
-from .config import config
+from config import config
 from validators import (
-    Validator, ValidationError, validate_register_data, 
+    Validator, ValidationError, validate_register_data,
     validate_login_data, validate_reservation_data
 )
 from email_service import send_welcome_email, send_reservation_confirmation, send_payment_confirmation
@@ -122,9 +108,9 @@ class Reservation(db.Model):
     guide_inclus = db.Column(db.Boolean, default=False)
     activites = db.Column(db.String(200))
     # Payment fields
-    mode_paiement = db.Column(db.String(30), default='non_defini')  # non_defini, especes, carte
-    statut_paiement = db.Column(db.String(30), default='non_paye')  # non_paye, paye, rembourse
-    moment_paiement = db.Column(db.String(30), default='apres_course')  # a_la_reservation, apres_course
+    mode_paiement = db.Column(db.String(30), default='non_defini')
+    statut_paiement = db.Column(db.String(30), default='non_paye')
+    moment_paiement = db.Column(db.String(30), default='apres_course')
     paiement_date = db.Column(db.DateTime, nullable=True)
     carte_derniers_chiffres = db.Column(db.String(4), nullable=True)
     transaction_id = db.Column(db.String(50), nullable=True)
@@ -210,6 +196,12 @@ class Reclamation(db.Model):
                 'client': self.client.to_dict() if self.client else None}
 
 
+# ===================== CREATE TABLES =====================
+# All models are defined above — safe to call create_all now
+with app.app_context():
+    db.create_all()
+
+
 # ===================== ERROR HANDLERS & HELPERS =====================
 
 def generate_reference():
@@ -235,24 +227,20 @@ def success_response(data=None, message=None, status_code=200):
 
 @app.errorhandler(400)
 def bad_request(error):
-    """Handle bad requests."""
     logger.error(f"Bad request: {error}")
     return error_response('Requête invalide', 400)
 
 
 @app.errorhandler(404)
 def not_found(error):
-    """Handle not found errors."""
     return error_response('Ressource non trouvée', 404)
 
 
 @app.errorhandler(500)
 def internal_error(error):
-    """Handle server errors."""
     logger.error(f"Internal server error: {error}")
     db.session.rollback()
     return error_response('Erreur serveur interne', 500)
-
 
 
 # ===================== ROUTES =====================
@@ -276,12 +264,9 @@ def serve_file(rel_path):
 def serve_spa(path):
     if path.startswith('api/'):
         return make_response('Not Found', 404)
-    
     full_path = os.path.join(FRONTEND, path)
     if path and os.path.isfile(full_path):
         return serve_file(path)
-    
-    # Serve index.html for SPA routing
     index_path = os.path.join(FRONTEND, 'index.html')
     if not os.path.isfile(index_path):
         return make_response(
@@ -297,21 +282,14 @@ def serve_spa(path):
 # AUTH
 @app.route('/api/auth/register', methods=['POST'])
 def register():
-    """Register a new user with validation."""
     try:
         data = request.get_json() or {}
-        
-        # Validate input data
         is_valid, error_msg = validate_register_data(data)
         if not is_valid:
             return error_response(error_msg, 400)
-        
-        # Check if email already exists
         if User.query.filter_by(email=data['email']).first():
             logger.warning(f"Registration attempt with existing email: {data['email']}")
             return error_response('Cet email est déjà utilisé', 400)
-        
-        # Create new user
         user = User(
             nom=data['nom'],
             prenom=data['prenom'],
@@ -320,24 +298,15 @@ def register():
             role=data.get('role', 'client')
         )
         user.set_password(data['password'])
-        
         db.session.add(user)
         db.session.commit()
-        
         token = create_access_token(identity=str(user.id))
         logger.info(f"New user registered: {user.email} ({user.role})")
-        
-        # Send welcome email (async-like: don't block if it fails)
         try:
             send_welcome_email(user)
         except Exception as e:
             logger.error(f"Welcome email error: {e}")
-        
-        return success_response({
-            'token': token,
-            'user': user.to_dict()
-        }, 'Inscription réussie', 201)
-    
+        return success_response({'token': token, 'user': user.to_dict()}, 'Inscription réussie', 201)
     except Exception as e:
         db.session.rollback()
         logger.error(f"Registration error: {str(e)}")
@@ -346,28 +315,18 @@ def register():
 
 @app.route('/api/auth/login', methods=['POST'])
 def login():
-    """Login user with validation."""
     try:
         data = request.get_json() or {}
-        
-        # Validate input
         is_valid, error_msg = validate_login_data(data)
         if not is_valid:
             return error_response(error_msg, 400)
-        
         user = User.query.filter_by(email=data['email']).first()
         if not user or not user.check_password(data['password']):
             logger.warning(f"Failed login attempt: {data['email']}")
             return error_response('Email ou mot de passe incorrect', 401)
-        
         token = create_access_token(identity=str(user.id))
         logger.info(f"User logged in: {user.email}")
-        
-        return success_response({
-            'token': token,
-            'user': user.to_dict()
-        }, 'Connexion réussie', 200)
-    
+        return success_response({'token': token, 'user': user.to_dict()}, 'Connexion réussie', 200)
     except Exception as e:
         logger.error(f"Login error: {str(e)}")
         return error_response('Erreur lors de la connexion', 500)
@@ -376,7 +335,6 @@ def login():
 @app.route('/api/auth/me', methods=['GET'])
 @jwt_required()
 def me():
-    """Get current user profile."""
     try:
         user = User.query.get(int(get_jwt_identity()))
         if not user:
@@ -466,30 +424,21 @@ def get_reservations():
 @app.route('/api/reservations', methods=['POST'])
 @jwt_required()
 def create_reservation():
-    """Create a new reservation with validation."""
     try:
         user = User.query.get(int(get_jwt_identity()))
         if not user:
             return error_response('Utilisateur non trouvé', 404)
-        
         data = request.get_json() or {}
-        
-        # Validate reservation data
         is_valid, error_msg = validate_reservation_data(data)
         if not is_valid:
             return error_response(error_msg, 400)
-        
-        # Parse date safely
         try:
             date_depart = datetime.fromisoformat(data['date_depart'].replace('Z', '+00:00'))
         except (ValueError, AttributeError):
             return error_response('Format de date invalide', 400)
-        
         ref = generate_reference()
-        
         mode_paiement = data.get('mode_paiement', 'non_defini')
         moment_paiement = data.get('moment_paiement', 'apres_course')
-        
         r = Reservation(
             reference=ref,
             client_id=user.id,
@@ -508,8 +457,6 @@ def create_reservation():
             moment_paiement=moment_paiement,
             statut_paiement='non_paye'
         )
-        
-        # If paying by card at reservation time, simulate payment
         if mode_paiement == 'carte' and moment_paiement == 'a_la_reservation':
             carte_num = data.get('carte_numero', '')
             if len(carte_num) >= 4:
@@ -517,19 +464,14 @@ def create_reservation():
             r.statut_paiement = 'paye'
             r.paiement_date = datetime.utcnow()
             r.transaction_id = 'TXN-' + ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
-        
         db.session.add(r)
         db.session.commit()
-        
-        # Send reservation confirmation email
         try:
             send_reservation_confirmation(r, user)
         except Exception as e:
             logger.error(f"Reservation email error: {e}")
-        
         logger.info(f"Reservation created: {ref} by user {user.email}")
         return success_response(r.to_dict(), 'Réservation créée avec succès', 201)
-    
     except Exception as e:
         db.session.rollback()
         logger.error(f"Error creating reservation: {str(e)}")
@@ -724,22 +666,18 @@ def create_reclamation():
 @app.route('/api/reservations/<int:rid>/payer', methods=['PUT'])
 @jwt_required()
 def payer_reservation(rid):
-    """Process payment for a reservation."""
     user = User.query.get(int(get_jwt_identity()))
     r = Reservation.query.get_or_404(rid)
     if user.role == 'client' and r.client_id != user.id:
         return jsonify({'error': 'Non autorisé'}), 403
     if r.statut_paiement == 'paye':
         return jsonify({'error': 'Cette réservation est déjà payée'}), 400
-    
     data = request.get_json()
     mode = data.get('mode_paiement', 'especes')
-    
     r.mode_paiement = mode
     r.statut_paiement = 'paye'
     r.paiement_date = datetime.utcnow()
     r.updated_at = datetime.utcnow()
-    
     if mode == 'carte':
         carte_num = data.get('carte_numero', '')
         if len(carte_num) >= 4:
@@ -747,18 +685,14 @@ def payer_reservation(rid):
         r.transaction_id = 'TXN-' + ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
     elif mode == 'especes':
         r.transaction_id = 'CASH-' + ''.join(random.choices(string.digits, k=8))
-    
     db.session.commit()
     logger.info(f"Payment processed for reservation {r.reference}: {mode}")
-    
-    # Send payment confirmation email
     try:
         client = User.query.get(r.client_id)
         if client:
             send_payment_confirmation(r, client)
     except Exception as e:
         logger.error(f"Payment email error: {e}")
-    
     return jsonify(r.to_dict())
 
 # STATS
