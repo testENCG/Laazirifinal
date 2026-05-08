@@ -8,7 +8,12 @@ from sqlalchemy import func
 import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
+# Now your import should work
+from config import config
 app = Flask(__name__)
 
 # This is the "Placeholder". 
