@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Recherche — LAAZIRI TRAVEL</title>
+  <meta name="description" content="Recherchez et réservez vos excursions, transferts et circuits avec LAAZIRI TRAVEL.">
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .result-card { display:flex; gap:0; background:var(--card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; transition:all .3s; margin-bottom:20px; }
+    .result-card:hover { border-color:rgba(0,168,232,0.4); box-shadow:0 8px 32px rgba(0,0,0,0.4); }
+    .result-img { width:220px; min-height:160px; object-fit:cover; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:4rem; background:linear-gradient(135deg,var(--primary-dark),var(--dark-2)); }
+    .result-img img { width:220px; height:100%; object-fit:cover; }
+    .result-body { flex:1; padding:20px 24px; display:flex; flex-direction:column; justify-content:space-between; }
+    .result-title { font-size:1.15rem; font-weight:700; margin-bottom:6px; }
+    .result-route { color:var(--muted); font-size:.85rem; margin-bottom:10px; }
+    .result-footer { display:flex; align-items:center; justify-content:space-between; margin-top:12px; flex-wrap:wrap; gap:10px; }
+    .result-price { font-size:1.5rem; font-weight:800; color:var(--primary); }
+    .result-price small { font-size:.75rem; color:var(--muted); font-weight:400; }
+    .pax-selector { display:flex; align-items:center; gap:8px; }
+    .pax-selector label { font-size:.8rem; color:var(--muted); }
+    .pax-selector select { background:rgba(255,255,255,0.07); border:1px solid var(--border); color:var(--text); padding:6px 10px; border-radius:8px; font-size:.85rem; font-family:inherit; cursor:pointer; }
+    .no-results { text-align:center; padding:80px 40px; }
+    .no-results .icon { font-size:4rem; margin-bottom:16px; }
+    .filters-bar { display:flex; gap:8px; padding:12px 0; flex-wrap:wrap; }
+    .filter-chip { padding:6px 14px; border-radius:100px; border:1px solid var(--border); background:transparent; color:var(--muted); font-size:.82rem; cursor:pointer; transition:all .2s; font-family:inherit; }
+    .filter-chip.active, .filter-chip:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
+    .img-map { 'Ouzoud':'https://images.unsplash.com/photo-1548020030-7db8e9503e84?w=400' }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="navbar-brand" href="/"><span>🌴 LAAZIRI TRAVEL</span></a>
+  <div class="navbar-nav">
+    <a class="nav-link" href="/">Accueil</a>
+    <div id="nav-guest" class="flex gap-2">
+      <a class="btn btn-ghost btn-sm" href="login.html">Connexion</a>
+      <a class="btn btn-primary btn-sm" href="register.html">S'inscrire</a>
+    </div>
+    <div id="nav-auth" class="flex gap-2 hidden">
+      <a class="btn btn-ghost btn-sm" href="dashboard.html">👤 <span id="nav-username"></span></a>
+      <button class="btn btn-ghost btn-sm" onclick="clearAuth();location.href='/'">Déconnexion</button>
+    </div>
+  </div>
+</nav>
+
+<div style="padding-top:64px;">
+  <!-- SEARCH BAR -->
+  <div style="background:var(--dark-2);border-bottom:1px solid var(--border);padding:20px 40px;">
+    <div class="search-box" style="max-width:900px;margin:0 auto;padding:16px 20px;">
+      <div class="search-tabs" id="type-tabs">
+        <button class="search-tab" onclick="switchType(this,'transfert')">✈️ Transfert</button>
+        <button class="search-tab" onclick="switchType(this,'excursion')">🏔️ Excursion</button>
+        <button class="search-tab" onclick="switchType(this,'circuit')">🗺️ Circuit</button>
+        <button class="search-tab" onclick="switchType(this,'agafay')">🏜️ Agafay</button>
+        <button class="search-tab" onclick="switchType(this,'hammam')">♨️ Hammam/SPA</button>
+        <button class="search-tab" onclick="switchType(this,'restaurant')">🍽️ Restaurant</button>
+        <button class="search-tab" onclick="switchType(this,'ville')">🏙️ City Tour</button>
+        <button class="search-tab" onclick="switchType(this,'golf')">⛳ Golf</button>
+      </div>
+      <div class="search-fields">
+        <div class="form-group">
+          <label class="form-label">Départ</label>
+          <select class="form-control" id="f-depart">
+            <option value="">Tous les départs</option>
+            <option value="Aéroport Marrakech">🛬 Aéroport Marrakech</option>
+            <option value="Marrakech">🏙️ Marrakech</option>
+            <option value="Riad">🏠 Riad</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Voyageurs</label>
+          <select class="form-control" id="f-pax">
+            <option value="">Tous</option>
+            <option value="1">1 personne</option>
+            <option value="2">2 personnes</option>
+            <option value="3">3 personnes</option>
+            <option value="4">4 personnes</option>
+            <option value="5">5 personnes</option>
+            <option value="7">6-7 personnes</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date</label>
+          <input type="date" class="form-control" id="f-date">
+        </div>
+        <button class="btn btn-primary" onclick="loadResults()" style="height:46px;">🔍</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div style="max-width:1000px;margin:0 auto;padding:32px 40px;">
+    <div class="flex justify-between items-center mb-2">
+      <div>
+        <h2 style="font-size:1.4rem;font-weight:800;" id="results-title">Résultats</h2>
+        <p class="text-muted text-sm mt-1" id="results-count"></p>
+      </div>
+      <select class="form-control" style="width:190px;" onchange="sortResults(this.value)">
+        <option value="prix_asc">Prix croissant</option>
+        <option value="prix_desc">Prix décroissant</option>
+        <option value="nom_asc">Nom A→Z</option>
+      </select>
+    </div>
+    <div id="results-list"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<!-- BOOKING MODAL -->
+<div class="modal-overlay" id="modal-book">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">📋 Confirmer la réservation</span>
+      <button class="modal-close">×</button>
+    </div>
+    <div id="modal-book-content"></div>
+  </div>
+</div>
+
+<a class="wa-float" href="https://wa.me/212652640646" target="_blank">💬</a>
+
+<script src="../js/api.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+let currentType = params.get('type') || 'transfert';
+let allResults = [];
+let allRawTarifs = [];
+let selectedTarif = null;
+
+// Destination images
+const DEST_IMAGES = {
+  "Cascade d'Ouzoud": "https://images.unsplash.com/photo-1548020030-7db8e9503e84?w=400&q=80",
+  "Agadir":           "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=80",
+  "Essaouira":        "https://images.unsplash.com/photo-1585320806297-9794b3e4aaae?w=400&q=80",
+  "Ouarzazate":       "https://images.unsplash.com/photo-1539020140153-e479b8d380f1?w=400&q=80",
+  "Vallée d'Ourika":  "https://images.unsplash.com/photo-1568322445389-f64ac2515020?w=400&q=80",
+  "Imlil":            "https://images.unsplash.com/photo-1489493887464-892be6d1daae?w=400&q=80",
+  "Merzouga":         "https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=400&q=80",
+  "Ciel de Marrakech":"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
+  "Marrakech":        "https://images.unsplash.com/photo-1539635278303-d4002c07eae3?w=400&q=80",
+  "Riad":             "https://images.unsplash.com/photo-1539635278303-d4002c07eae3?w=400&q=80",
+  "Aéroport Casablanca":"https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=400&q=80",
+};
+const EMOJIS = { transfert:'✈️', excursion:'🏔️', circuit:'🗺️', agafay:'🏜️', hammam:'♨️', restaurant:'🍽️', ville:'🏙️', golf:'⛳' };
+const TITLES = { transfert:'✈️ Transferts', excursion:'🏔️ Excursions', circuit:'🗺️ Circuits', agafay:'🏜️ Agafay Desert', hammam:'♨️ Hammam & SPA', restaurant:'🍽️ Restaurants', ville:'🏙️ City Tours', golf:'⛳ Golfs' };
+
+function getDestImage(dest) {
+  for (const [key, url] of Object.entries(DEST_IMAGES)) {
+    if (dest.includes(key) || key.includes(dest.split(' ')[0])) return url;
+  }
+  return null;
+}
+
+function switchType(el, type) {
+  document.querySelectorAll('.search-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  currentType = type;
+  loadResults();
+}
+
+function initTabs() {
+  const tabs = document.querySelectorAll('.search-tab');
+  const map = { transfert:0, excursion:1, circuit:2, agafay:3, hammam:4, restaurant:5, ville:6, golf:7 };
+  tabs[map[currentType] ?? 0]?.classList.add('active');
+  const d = params.get('depart'); if (d) document.getElementById('f-depart').value = d;
+  const p = params.get('pax'); if (p) document.getElementById('f-pax').value = p;
+  const dt = params.get('date'); if (dt) document.getElementById('f-date').value = dt;
+}
+
+// Group tarifs by destination, picking the one matching selected pax
+function groupTarifs(tarifs) {
+  const paxSelected = parseInt(document.getElementById('f-pax').value) || 0;
+  const groups = {};
+  tarifs.forEach(t => {
+    const key = t.nom_fr.replace(/\s*\(\d[^)]*\)\s*/g,'').trim() + '|' + t.destination;
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(t);
+  });
+  return Object.values(groups).map(group => {
+    if (!paxSelected) return group[0];
+    const match = group.find(t => t.pax_min <= paxSelected && t.pax_max >= paxSelected);
+    return match || group[0];
+  });
+}
+
+async function loadResults() {
+  const list = document.getElementById('results-list');
+  list.innerHTML = '<div class="spinner"></div>';
+  const pax = document.getElementById('f-pax').value;
+  const depart = document.getElementById('f-depart').value;
+  const q = new URLSearchParams({ type: currentType });
+  if (pax) q.set('pax', pax);
+  if (depart) q.set('depart', depart);
+  try {
+    const data = await apiFetch('/tarifs?' + q);
+    allRawTarifs = data;
+    allResults = groupTarifs(data);
+    renderResults(allResults);
+    document.getElementById('results-title').textContent = TITLES[currentType] || 'Résultats';
+  } catch(e) {
+    list.innerHTML = '<div class="alert alert-danger">Erreur de chargement. Vérifiez que le serveur est démarré.</div>';
+  }
+}
+
+function sortResults(val) {
+  let sorted = [...allResults];
+  if (val === 'prix_asc') sorted.sort((a,b) => a.prix - b.prix);
+  else if (val === 'prix_desc') sorted.sort((a,b) => b.prix - a.prix);
+  else if (val === 'nom_asc') sorted.sort((a,b) => a.nom_fr.localeCompare(b.nom_fr));
+  renderResults(sorted);
+}
+
+function renderResults(data) {
+  const list = document.getElementById('results-list');
+  document.getElementById('results-count').textContent = `${data.length} résultat(s) trouvé(s)`;
+  if (!data.length) {
+    list.innerHTML = `<div class="no-results">
+      <div class="icon">🔍</div>
+      <h3 class="mb-2">Aucun résultat</h3>
+      <p class="text-muted">Essayez de changer vos filtres ou choisissez une autre catégorie.</p>
+    </div>`; return;
+  }
+  list.innerHTML = data.map(t => {
+    const imgUrl = getDestImage(t.destination);
+    const imgHTML = imgUrl
+      ? `<img src="${imgUrl}" alt="${t.destination}" style="width:220px;height:100%;object-fit:cover;min-height:160px;">`
+      : `<div style="width:220px;min-height:160px;background:linear-gradient(135deg,var(--primary-dark),var(--dark-2));display:flex;align-items:center;justify-content:center;font-size:3.5rem;">${EMOJIS[t.type_service]||'🌴'}</div>`;
+    
+    // Find all pax variants for this destination
+    const variants = allRawTarifs.filter(r => r.destination === t.destination);
+    const paxOpts = variants.map(v => `<option value="${v.id}" data-prix="${v.prix}" ${v.id===t.id?'selected':''}>${v.pax_min === v.pax_max ? v.pax_min+' pers.' : v.pax_min+'-'+v.pax_max+' pers.'} — ${formatPrice(v.prix)}</option>`).join('');
+
+    return `<div class="result-card fade-in">
+      ${imgHTML}
+      <div class="result-body">
+        <div>
+          <div class="card-badges mb-2">
+            ${t.repas_inclus ? '<span class="badge badge-success">🍽️ Repas inclus</span>' : ''}
+            ${t.guide_inclus ? '<span class="badge badge-primary">🎤 Guide inclus</span>' : ''}
+            <span class="badge badge-muted">⏱️ ${t.duree}</span>
+          </div>
+          <div class="result-title">${t.nom_fr.replace(/\s*\(\d[^)]*\)\s*/g,'').trim()}</div>
+          <div class="result-route">📍 ${t.depart} → ${t.destination}</div>
+          ${t.activites ? `<div class="text-xs text-muted">✅ ${t.activites}</div>` : ''}
+        </div>
+        <div class="result-footer">
+          <div>
+            ${variants.length > 1 ? `<div class="pax-selector"><label>Voyageurs :</label><select id="pax-sel-${t.id}" onchange="updatePrice(this,${t.id})">${paxOpts}</select></div>` : ''}
+            <div class="result-price mt-1" id="price-${t.id}">${formatPrice(t.prix)} <small>/ groupe</small></div>
+          </div>
+          <button class="btn btn-accent" onclick="openBook(${t.id})" id="btn-book-${t.id}">Réserver →</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updatePrice(sel, origId) {
+  const opt = sel.options[sel.selectedIndex];
+  const newPrix = parseFloat(opt.dataset.prix);
+  document.getElementById('price-' + origId).innerHTML = formatPrice(newPrix) + ' <small>/ groupe</small>';
+  // Update the tarif reference so booking uses the right one
+  sel.setAttribute('data-selected-tarif', opt.value);
+}
+
+function openBook(tid) {
+  const user = getUser();
+  if (!user) { window.location.href = 'login.html'; return; }
+  
+  // Find the right tarif (may have been updated by pax selector)
+  let sel = document.querySelector(`[id^="pax-sel-${tid}"]`);
+  let actualTarifId = tid;
+  if (sel) {
+    actualTarifId = parseInt(sel.getAttribute('data-selected-tarif') || sel.value || tid);
+  }
+  
+  let tarif = allRawTarifs.find(t => t.id === actualTarifId);
+  if (!tarif) tarif = allRawTarifs.find(t => t.id === tid);
+  if (!tarif) return;
+  
+  selectedTarif = tarif;
+  const date = document.getElementById('f-date').value;
+  const pax = document.getElementById('f-pax').value || tarif.pax_min;
+  
+  document.getElementById('modal-book-content').innerHTML = `
+    <div class="card p-3 mb-4" style="background:rgba(0,168,232,0.08);border-color:rgba(0,168,232,0.3);">
+      <div class="font-bold mb-1">${tarif.nom_fr.replace(/\s*\(\d[^)]*\)\s*/g,'').trim()}</div>
+      <div class="text-sm text-muted">📍 ${tarif.depart} → ${tarif.destination} &nbsp;|&nbsp; ⏱️ ${tarif.duree}</div>
+      <div class="result-price mt-2">${formatPrice(tarif.prix)} <small>pour ${tarif.pax_min === tarif.pax_max ? tarif.pax_min : tarif.pax_min+'-'+tarif.pax_max} pers.</small></div>
+    </div>
+    <div id="book-alert"></div>
+    <div class="form-group mb-3">
+      <label class="form-label">Date & Heure de départ</label>
+      <input type="datetime-local" class="form-control" id="b-date" value="${date ? date+'T09:00' : ''}" required>
+    </div>
+    <div class="form-group mb-3">
+      <label class="form-label">Nombre de voyageurs</label>
+      <select class="form-control" id="b-pax">
+        ${Array.from({length: tarif.pax_max - tarif.pax_min + 1}, (_,i) => tarif.pax_min+i)
+          .map(n => `<option ${n==pax?'selected':''}>${n}</option>`).join('')}
+      </select>
+    </div>
+    <div class="form-group mb-4">
+      <label class="form-label">Notes / Informations complémentaires</label>
+      <textarea class="form-control" id="b-notes" rows="3" placeholder="N° de vol, heure d'arrivée, demandes spéciales..."></textarea>
+    </div>
+    <button class="btn btn-accent" style="width:100%;justify-content:center;font-size:1rem;" onclick="confirmBook()">✅ Confirmer la réservation</button>
+  `;
+  openModal('modal-book');
+}
+
+async function confirmBook() {
+  const dateVal = document.getElementById('b-date').value;
+  if (!dateVal) { document.getElementById('book-alert').innerHTML = '<div class="alert alert-danger">Veuillez choisir une date</div>'; return; }
+  const btn = document.querySelector('#modal-book .btn-accent');
+  btn.textContent = '⏳ Envoi en cours...'; btn.disabled = true;
+  try {
+    await apiFetch('/reservations', {
+      method: 'POST',
+      body: JSON.stringify({
+        type_service: selectedTarif.type_service,
+        nom_service: selectedTarif.nom_fr,
+        depart: selectedTarif.depart,
+        destination: selectedTarif.destination,
+        date_depart: dateVal,
+        nombre_pax: parseInt(document.getElementById('b-pax').value),
+        tarif: selectedTarif.prix,
+        notes: document.getElementById('b-notes').value,
+        repas_inclus: selectedTarif.repas_inclus,
+        guide_inclus: selectedTarif.guide_inclus,
+        activites: selectedTarif.activites
+      })
+    });
+    closeModal('modal-book');
+    toast('✅ Réservation créée! Vous serez contacté sous 24h.');
+    setTimeout(() => window.location.href = 'dashboard.html', 2000);
+  } catch(e) {
+    document.getElementById('book-alert').innerHTML = `<div class="alert alert-danger">${e.message}</div>`;
+    btn.textContent = '✅ Confirmer la réservation'; btn.disabled = false;
+  }
+}
+
+// Nav auth
+const user = getUser();
+if (user) {
+  document.getElementById('nav-guest').classList.add('hidden');
+  document.getElementById('nav-auth').classList.remove('hidden');
+  document.getElementById('nav-username').textContent = user.prenom;
+}
+
+document.getElementById('f-date').min = new Date().toISOString().split('T')[0];
+initTabs();
+loadResults();
+</script>
+</body>
+</html>

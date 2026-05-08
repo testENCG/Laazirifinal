@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Connexion — LAAZIRI TRAVEL</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body { display:flex; align-items:center; justify-content:center; min-height:100vh; background:var(--dark); }
+    .auth-wrap { width:100%; max-width:420px; padding:20px; }
+    .auth-card { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:40px 36px; }
+    .auth-logo { text-align:center; margin-bottom:28px; }
+    .auth-logo span { font-size:1.5rem; font-weight:800; color:var(--primary); }
+    .auth-title { text-align:center; font-size:1.3rem; font-weight:700; margin-bottom:6px; }
+    .auth-sub { text-align:center; color:var(--muted); font-size:.88rem; margin-bottom:28px; }
+    .demo-box { background:rgba(0,168,232,0.07); border:1px solid rgba(0,168,232,0.2); border-radius:10px; padding:14px; margin-top:20px; font-size:.8rem; color:var(--muted); line-height:1.8; }
+    .demo-box strong { color:var(--primary); }
+    .divider { display:flex; align-items:center; gap:12px; margin:20px 0; color:var(--muted); font-size:.8rem; }
+    .divider::before, .divider::after { content:''; flex:1; height:1px; background:var(--border); }
+  </style>
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-logo"><span>🌴 LAAZIRI TRAVEL</span></div>
+    <div class="auth-title">Bon retour !</div>
+    <div class="auth-sub">Connectez-vous à votre compte</div>
+    
+    <div id="login-alert"></div>
+    
+    <div class="form-group mb-3">
+      <label class="form-label">Email</label>
+      <input type="email" class="form-control" id="email" placeholder="votre@email.com" autocomplete="email">
+    </div>
+    <div class="form-group mb-4">
+      <label class="form-label">Mot de passe</label>
+      <input type="password" class="form-control" id="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter') doLogin()">
+    </div>
+    
+    <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:1rem;height:48px;" onclick="doLogin()" id="login-btn">
+      Se connecter
+    </button>
+
+    <div class="divider">ou</div>
+    
+    <p style="text-align:center;font-size:.88rem;color:var(--muted);">
+      Pas encore de compte ? <a href="register.html" style="color:var(--primary);font-weight:600;">S'inscrire</a>
+    </p>
+    
+    <div class="demo-box">
+      <strong>🔑 Comptes démo :</strong><br>
+      🏢 Agence : <strong>agence@laaziritravel.com</strong> / agence2024<br>
+      👤 Client : <strong>omar@client.com</strong> / client2024<br>
+      🚗 Chauffeur : <strong>chauffeur1@laaziritravel.com</strong> / chauffeur2024
+    </div>
+    
+    <p style="text-align:center;margin-top:20px;font-size:.85rem;">
+      <a href="/" style="color:var(--muted);">← Retour à l'accueil</a>
+    </p>
+  </div>
+</div>
+<script src="../js/api.js"></script>
+<script>
+if (getUser()) { location.href = '/'; }
+
+async function doLogin() {
+  const email = document.getElementById('email').value.trim();
+  const pwd = document.getElementById('password').value;
+  const alert = document.getElementById('login-alert');
+  const btn = document.getElementById('login-btn');
+  if (!email || !pwd) { alert.innerHTML = '<div class="alert alert-danger">Remplissez tous les champs</div>'; return; }
+  btn.textContent = '⏳ Connexion...'; btn.disabled = true;
+  try {
+    const data = await apiFetch('/auth/login', { method:'POST', body: JSON.stringify({ email, password: pwd }) });
+    setAuth(data.token, data.user);
+    toast('✅ Connecté en tant que ' + data.user.prenom);
+    setTimeout(() => {
+      if (data.user.role === 'agence') location.href = 'admin.html';
+      else if (data.user.role === 'chauffeur') location.href = 'chauffeur.html';
+      else location.href = 'dashboard.html';
+    }, 800);
+  } catch(e) {
+    alert.innerHTML = `<div class="alert alert-danger">❌ ${e.message}</div>`;
+    btn.textContent = 'Se connecter'; btn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>

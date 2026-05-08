@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Mon Espace — LAAZIRI TRAVEL</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<nav class="navbar">
+  <a class="navbar-brand" href="/"><span>🌴 LAAZIRI TRAVEL</span></a>
+  <div class="navbar-nav">
+    <a class="btn btn-primary btn-sm" href="search.html">+ Nouvelle réservation</a>
+    <button class="btn btn-ghost btn-sm" onclick="clearAuth();location.href='/'">Déconnexion</button>
+  </div>
+</nav>
+
+<div class="dash-layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div style="padding:12px 16px 20px;border-bottom:1px solid var(--border);margin-bottom:12px;">
+      <div id="user-avatar" style="width:48px;height:48px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:700;margin-bottom:8px;"></div>
+      <div id="user-name" class="font-bold"></div>
+      <div id="user-email" class="text-xs text-muted mt-1"></div>
+    </div>
+    <button class="sidebar-item active" id="sb-reservations" onclick="showSection('reservations')"><span class="sidebar-icon">📋</span> Mes Réservations</button>
+    <button class="sidebar-item" id="sb-historique" onclick="showSection('historique')"><span class="sidebar-icon">🕐</span> Historique</button>
+    <button class="sidebar-item" id="sb-profil" onclick="showSection('profil')"><span class="sidebar-icon">👤</span> Mon Profil</button>
+    <button class="sidebar-item" id="sb-avis" onclick="showSection('avis')"><span class="sidebar-icon">⭐</span> Donner un Avis</button>
+    <button class="sidebar-item" id="sb-reclamation" onclick="showSection('reclamation')"><span class="sidebar-icon">📣</span> Réclamation</button>
+    <button class="sidebar-item" id="sb-aide" onclick="showSection('aide')"><span class="sidebar-icon">❓</span> Aide</button>
+    <button class="sidebar-item" id="sb-contact" onclick="showSection('contact')"><span class="sidebar-icon">📞</span> Contacter l'agence</button>
+    <button class="sidebar-item" style="margin-top:auto;color:var(--danger);" onclick="clearAuth();location.href='/'"><span class="sidebar-icon">🚪</span> Déconnexion</button>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="dash-content">
+
+    <!-- RESERVATIONS -->
+    <div id="section-reservations">
+      <div class="dash-header">
+        <h2>📋 Mes Réservations</h2>
+        <p>Consultez et gérez vos réservations actives</p>
+      </div>
+      <div id="res-list"><div class="spinner"></div></div>
+    </div>
+
+    <!-- HISTORIQUE -->
+    <div id="section-historique" class="hidden">
+      <div class="dash-header">
+        <h2>🕐 Historique des Commandes</h2>
+        <p>Toutes vos réservations passées</p>
+      </div>
+      <div id="hist-list"><div class="spinner"></div></div>
+    </div>
+
+    <!-- PROFIL -->
+    <div id="section-profil" class="hidden">
+      <div class="dash-header"><h2>👤 Mon Profil</h2><p>Gérez vos informations personnelles</p></div>
+      <div class="card p-4" style="max-width:500px;">
+        <div id="profil-alert"></div>
+        <div class="form-group mb-3">
+          <label class="form-label">Prénom</label>
+          <input class="form-control" id="p-prenom">
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Nom</label>
+          <input class="form-control" id="p-nom">
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Téléphone</label>
+          <input class="form-control" id="p-tel">
+        </div>
+        <div class="form-group mb-4">
+          <label class="form-label">Nouveau mot de passe (laisser vide pour ne pas changer)</label>
+          <input type="password" class="form-control" id="p-pwd" placeholder="••••••••">
+        </div>
+        <button class="btn btn-primary" onclick="saveProfil()">💾 Enregistrer</button>
+      </div>
+    </div>
+
+    <!-- AVIS -->
+    <div id="section-avis" class="hidden">
+      <div class="dash-header"><h2>⭐ Donner un Avis</h2><p>Partagez votre expérience</p></div>
+      <div class="card p-4" style="max-width:500px;">
+        <div id="avis-alert"></div>
+        <div class="form-group mb-3">
+          <label class="form-label">Note</label>
+          <div class="stars" id="star-rating">
+            <span class="star" onclick="setRating(1)">★</span>
+            <span class="star" onclick="setRating(2)">★</span>
+            <span class="star" onclick="setRating(3)">★</span>
+            <span class="star" onclick="setRating(4)">★</span>
+            <span class="star" onclick="setRating(5)">★</span>
+          </div>
+        </div>
+        <div class="form-group mb-4">
+          <label class="form-label">Commentaire</label>
+          <textarea class="form-control" id="a-comment" rows="4" placeholder="Partagez votre expérience..."></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="submitAvis()">✅ Envoyer l'avis</button>
+      </div>
+    </div>
+
+    <!-- RECLAMATION -->
+    <div id="section-reclamation" class="hidden">
+      <div class="dash-header"><h2>📣 Réclamation</h2><p>Signalez un problème</p></div>
+      <div class="card p-4" style="max-width:500px;">
+        <div id="rec-alert"></div>
+        <div class="form-group mb-3">
+          <label class="form-label">Sujet</label>
+          <input class="form-control" id="r-sujet" placeholder="Objet de la réclamation">
+        </div>
+        <div class="form-group mb-4">
+          <label class="form-label">Message</label>
+          <textarea class="form-control" id="r-msg" rows="5" placeholder="Décrivez votre problème..."></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="submitReclamation()">📤 Envoyer</button>
+      </div>
+      <div class="mt-4" id="recs-list"></div>
+    </div>
+
+    <!-- AIDE -->
+    <div id="section-aide" class="hidden">
+      <div class="dash-header"><h2>❓ Aide & FAQ</h2></div>
+      <div style="max-width:600px;">
+        ${[
+          ['Comment annuler une réservation?', 'Vous pouvez annuler depuis la section "Mes Réservations" en cliquant sur le bouton Annuler. Les annulations sont possibles 24h avant la date de départ.'],
+          ['Comment modifier une réservation?', 'Cliquez sur "Modifier" dans votre réservation pour changer la date ou le nombre de voyageurs.'],
+          ['Comment suivre mon chauffeur?', 'Une fois votre réservation confirmée, le statut de votre course est visible en temps réel dans vos réservations.'],
+          ['Quels modes de paiement?', 'Le paiement s\'effectue directement au chauffeur ou à l\'agence. Espèces, carte ou virement bancaire acceptés.'],
+          ['Comment nous contacter?', 'Via WhatsApp au +212 652 640 646 ou par email à contact@laaziritravel.com — disponible 24h/24.'],
+        ].map(([q,a]) => `
+          <div class="card p-3 mb-3">
+            <div class="font-bold mb-2">❓ ${q}</div>
+            <div class="text-sm text-muted">${a}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- CONTACT -->
+    <div id="section-contact" class="hidden">
+      <div class="dash-header"><h2>📞 Contacter l'Agence</h2></div>
+      <div class="grid-3" style="max-width:700px;">
+        <a href="https://wa.me/212652640646" target="_blank" class="card p-3 text-center" style="text-decoration:none;">
+          <div style="font-size:2.5rem;margin-bottom:10px;">💬</div>
+          <div class="font-bold">WhatsApp</div>
+          <div class="text-muted text-sm mt-1">+212 652 640 646</div>
+          <div class="btn btn-primary btn-sm mt-3" style="justify-content:center;">Ouvrir</div>
+        </a>
+        <a href="tel:+212652640646" class="card p-3 text-center" style="text-decoration:none;">
+          <div style="font-size:2.5rem;margin-bottom:10px;">📱</div>
+          <div class="font-bold">Appeler</div>
+          <div class="text-muted text-sm mt-1">+212 652 640 646</div>
+          <div class="btn btn-outline btn-sm mt-3" style="justify-content:center;">Appeler</div>
+        </a>
+        <a href="mailto:contact@laaziritravel.com" class="card p-3 text-center" style="text-decoration:none;">
+          <div style="font-size:2.5rem;margin-bottom:10px;">✉️</div>
+          <div class="font-bold">Email</div>
+          <div class="text-muted text-sm mt-1">contact@laaziritravel.com</div>
+          <div class="btn btn-outline btn-sm mt-3" style="justify-content:center;">Écrire</div>
+        </a>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="modal-edit">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">✏️ Modifier la réservation</span><button class="modal-close">×</button></div>
+    <div id="modal-edit-content"></div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" id="modal-detail">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">📋 Détail de la réservation</span><button class="modal-close">×</button></div>
+    <div id="modal-detail-content"></div>
+  </div>
+</div>
+
+<a class="wa-float" href="https://wa.me/212652640646" target="_blank">💬</a>
+
+<script src="../js/api.js"></script>
+<script>
+let currentRating = 5;
+let allReservations = [];
+
+// Auth guard
+const user = getUser();
+if (!user) { location.href = 'login.html'; }
+else if (user.role === 'agence') { location.href = 'admin.html'; }
+else if (user.role === 'chauffeur') { location.href = 'chauffeur.html'; }
+
+// Fill user info
+if (user) {
+  document.getElementById('user-avatar').textContent = (user.prenom||'?')[0].toUpperCase();
+  document.getElementById('user-name').textContent = user.prenom + ' ' + user.nom;
+  document.getElementById('user-email').textContent = user.email;
+  document.getElementById('p-prenom').value = user.prenom;
+  document.getElementById('p-nom').value = user.nom;
+  document.getElementById('p-tel').value = user.telephone || '';
+}
+
+function showSection(name) {
+  document.querySelectorAll('[id^="section-"]').forEach(s => s.classList.add('hidden'));
+  document.getElementById('section-' + name).classList.remove('hidden');
+  document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+  document.getElementById('sb-' + name)?.classList.add('active');
+  if (name === 'reservations') loadReservations();
+  if (name === 'historique') loadHistorique();
+  if (name === 'reclamation') loadReclamations();
+}
+
+async function loadReservations() {
+  const el = document.getElementById('res-list');
+  try {
+    const data = await apiFetch('/reservations');
+    allReservations = data;
+    const active = data.filter(r => !['terminee','annulee'].includes(r.statut));
+    if (!active.length) { el.innerHTML = '<div class="alert alert-warning">Aucune réservation active. <a href="search.html" class="text-primary">Réserver maintenant →</a></div>'; return; }
+    el.innerHTML = `<div class="table-wrap"><table><thead><tr><th>Référence</th><th>Service</th><th>Destination</th><th>Date</th><th>Voyageurs</th><th>Tarif</th><th>Statut</th><th>Actions</th></tr></thead><tbody>
+      ${active.map(r => `<tr>
+        <td class="font-bold text-primary">${r.reference}</td>
+        <td>${serviceIcon(r.type_service)}</td>
+        <td>${r.destination}</td>
+        <td>${formatDate(r.date_depart)}</td>
+        <td>👥 ${r.nombre_pax}</td>
+        <td>${formatPrice(r.tarif)}</td>
+        <td>${badgeHTML(r.statut)}</td>
+        <td class="flex gap-2">
+          <button class="btn btn-ghost btn-sm" onclick="showDetail(${r.id})">👁️</button>
+          ${r.statut === 'en_attente' ? `<button class="btn btn-ghost btn-sm" onclick="showEdit(${r.id})">✏️</button><button class="btn btn-danger btn-sm" onclick="annuler(${r.id})">✕</button>` : ''}
+        </td>
+      </tr>`).join('')}
+    </tbody></table></div>`;
+  } catch(e) { el.innerHTML = '<div class="alert alert-danger">Erreur de chargement</div>'; }
+}
+
+async function loadHistorique() {
+  const el = document.getElementById('hist-list');
+  try {
+    const data = await apiFetch('/reservations');
+    if (!data.length) { el.innerHTML = '<div class="alert alert-warning">Aucune réservation.</div>'; return; }
+    el.innerHTML = `<div class="table-wrap"><table><thead><tr><th>Référence</th><th>Service</th><th>Destination</th><th>Date</th><th>Tarif</th><th>Statut</th><th>Chauffeur</th></tr></thead><tbody>
+      ${data.map(r => `<tr>
+        <td class="font-bold text-primary">${r.reference}</td>
+        <td>${serviceIcon(r.type_service)}</td>
+        <td>${r.destination}</td>
+        <td>${formatDate(r.date_depart)}</td>
+        <td>${formatPrice(r.tarif)}</td>
+        <td>${badgeHTML(r.statut)}</td>
+        <td>${r.chauffeur ? r.chauffeur.nom_complet : '<span class="text-muted">—</span>'}</td>
+      </tr>`).join('')}
+    </tbody></table></div>`;
+  } catch(e) { el.innerHTML = '<div class="alert alert-danger">Erreur</div>'; }
+}
+
+function showDetail(id) {
+  const r = allReservations.find(x => x.id === id);
+  if (!r) return;
+  document.getElementById('modal-detail-content').innerHTML = `
+    <div class="card p-3 mb-3" style="background:rgba(0,168,232,0.08);border-color:rgba(0,168,232,0.3);">
+      <div class="flex justify-between"><span class="font-bold">${r.reference}</span>${badgeHTML(r.statut)}</div>
+    </div>
+    <div class="grid-2 gap-3">
+      <div><div class="text-xs text-muted">Service</div><div class="font-bold mt-1">${serviceIcon(r.type_service)} ${r.nom_service}</div></div>
+      <div><div class="text-xs text-muted">Tarif</div><div class="font-bold mt-1 text-primary">${formatPrice(r.tarif)}</div></div>
+      <div><div class="text-xs text-muted">Départ</div><div class="mt-1">${r.depart}</div></div>
+      <div><div class="text-xs text-muted">Destination</div><div class="mt-1">${r.destination}</div></div>
+      <div><div class="text-xs text-muted">Date</div><div class="mt-1">${formatDate(r.date_depart)}</div></div>
+      <div><div class="text-xs text-muted">Voyageurs</div><div class="mt-1">👥 ${r.nombre_pax}</div></div>
+      ${r.chauffeur ? `<div class="grid-2" style="grid-column:1/-1"><div class="text-xs text-muted">Chauffeur assigné</div><div class="mt-1 font-bold">🚗 ${r.chauffeur.nom_complet} — ${r.chauffeur.vehicule_marque}</div></div>` : ''}
+      ${r.notes ? `<div style="grid-column:1/-1"><div class="text-xs text-muted">Notes</div><div class="mt-1 text-sm">${r.notes}</div></div>` : ''}
+    </div>
+  `;
+  openModal('modal-detail');
+}
+
+function showEdit(id) {
+  const r = allReservations.find(x => x.id === id);
+  if (!r) return;
+  const dt = r.date_depart ? r.date_depart.slice(0,16) : '';
+  document.getElementById('modal-edit-content').innerHTML = `
+    <div id="edit-alert"></div>
+    <div class="form-group mb-3">
+      <label class="form-label">Date & Heure</label>
+      <input type="datetime-local" class="form-control" id="e-date" value="${dt}">
+    </div>
+    <div class="form-group mb-3">
+      <label class="form-label">Nombre de voyageurs</label>
+      <input type="number" class="form-control" id="e-pax" value="${r.nombre_pax}" min="1" max="14">
+    </div>
+    <div class="form-group mb-4">
+      <label class="form-label">Notes</label>
+      <textarea class="form-control" id="e-notes" rows="3">${r.notes||''}</textarea>
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="saveEdit(${id})">💾 Enregistrer</button>
+  `;
+  openModal('modal-edit');
+}
+
+async function saveEdit(id) {
+  try {
+    await apiFetch('/reservations/' + id, {
+      method: 'PUT',
+      body: JSON.stringify({
+        date_depart: document.getElementById('e-date').value,
+        nombre_pax: parseInt(document.getElementById('e-pax').value),
+        notes: document.getElementById('e-notes').value
+      })
+    });
+    closeModal('modal-edit');
+    toast('Réservation modifiée!');
+    loadReservations();
+  } catch(e) { document.getElementById('edit-alert').innerHTML = `<div class="alert alert-danger">${e.message}</div>`; }
+}
+
+async function annuler(id) {
+  if (!confirm('Confirmer l\'annulation?')) return;
+  try {
+    await apiFetch('/reservations/' + id + '/annuler', { method: 'PUT' });
+    toast('Réservation annulée', 'warning');
+    loadReservations();
+  } catch(e) { toast(e.message, 'danger'); }
+}
+
+function setRating(n) {
+  currentRating = n;
+  document.querySelectorAll('.star').forEach((s,i) => s.classList.toggle('filled', i < n));
+}
+setRating(5);
+
+async function submitAvis() {
+  const comment = document.getElementById('a-comment').value;
+  if (!comment.trim()) { document.getElementById('avis-alert').innerHTML = '<div class="alert alert-danger">Écrivez un commentaire</div>'; return; }
+  try {
+    await apiFetch('/avis', { method:'POST', body: JSON.stringify({ note: currentRating, commentaire: comment }) });
+    document.getElementById('avis-alert').innerHTML = '<div class="alert alert-success">✅ Merci pour votre avis!</div>';
+    document.getElementById('a-comment').value = '';
+    setRating(5);
+  } catch(e) { document.getElementById('avis-alert').innerHTML = `<div class="alert alert-danger">${e.message}</div>`; }
+}
+
+async function submitReclamation() {
+  const sujet = document.getElementById('r-sujet').value;
+  const msg = document.getElementById('r-msg').value;
+  if (!sujet||!msg) { document.getElementById('rec-alert').innerHTML = '<div class="alert alert-danger">Remplissez tous les champs</div>'; return; }
+  try {
+    await apiFetch('/reclamations', { method:'POST', body: JSON.stringify({ sujet, message: msg }) });
+    document.getElementById('rec-alert').innerHTML = '<div class="alert alert-success">✅ Réclamation envoyée!</div>';
+    document.getElementById('r-sujet').value = '';
+    document.getElementById('r-msg').value = '';
+    loadReclamations();
+  } catch(e) { document.getElementById('rec-alert').innerHTML = `<div class="alert alert-danger">${e.message}</div>`; }
+}
+
+async function loadReclamations() {
+  try {
+    const data = await apiFetch('/reclamations');
+    const el = document.getElementById('recs-list');
+    if (!data.length) { el.innerHTML = ''; return; }
+    el.innerHTML = `<h3 class="mb-3">Mes réclamations</h3><div class="table-wrap"><table><thead><tr><th>Sujet</th><th>Statut</th><th>Date</th></tr></thead><tbody>
+      ${data.map(r=>`<tr><td>${r.sujet}</td><td>${badgeHTML(r.statut==='ouverte'?'en_attente':r.statut==='traitee'?'confirmee':'annulee')}</td><td>${formatDate(r.created_at)}</td></tr>`).join('')}
+    </tbody></table></div>`;
+  } catch(e) {}
+}
+
+async function saveProfil() {
+  try {
+    const data = await apiFetch('/auth/update', {
+      method:'PUT',
+      body: JSON.stringify({ prenom: document.getElementById('p-prenom').value, nom: document.getElementById('p-nom').value, telephone: document.getElementById('p-tel').value, password: document.getElementById('p-pwd').value||undefined })
+    });
+    localStorage.setItem('lt_user', JSON.stringify(data));
+    document.getElementById('profil-alert').innerHTML = '<div class="alert alert-success">✅ Profil mis à jour!</div>';
+  } catch(e) { document.getElementById('profil-alert').innerHTML = `<div class="alert alert-danger">${e.message}</div>`; }
+}
+
+loadReservations();
+</script>
+</body>
+</html>

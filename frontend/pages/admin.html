@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Espace Chargé Client — LAAZIRI TRAVEL</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<nav class="navbar">
+  <a class="navbar-brand" href="/"><span>🌴 LAAZIRI TRAVEL</span></a>
+  <div class="navbar-nav">
+    <span style="background:rgba(0,168,232,0.15);color:var(--primary);padding:4px 12px;border-radius:100px;font-size:.8rem;font-weight:600;">🏢 Chargé de Client</span>
+    <button class="btn btn-ghost btn-sm" onclick="clearAuth();location.href='/'">Déconnexion</button>
+  </div>
+</nav>
+
+<div class="dash-layout">
+  <aside class="sidebar">
+    <div style="padding:12px 16px 20px;border-bottom:1px solid var(--border);margin-bottom:12px;">
+      <div style="font-weight:700;">Administration</div>
+      <div class="text-xs text-muted mt-1">LAAZIRI TRAVEL</div>
+    </div>
+    <button class="sidebar-item active" id="sb-overview" onclick="showSection('overview')"><span class="sidebar-icon">📊</span> Tableau de Bord</button>
+    <button class="sidebar-item" id="sb-reservations" onclick="showSection('reservations')"><span class="sidebar-icon">📋</span> Réservations</button>
+    <button class="sidebar-item" id="sb-chauffeurs" onclick="showSection('chauffeurs')"><span class="sidebar-icon">🚗</span> Chauffeurs</button>
+    <button class="sidebar-item" id="sb-tarifs" onclick="showSection('tarifs')"><span class="sidebar-icon">💰</span> Tarifs</button>
+    <button class="sidebar-item" id="sb-reclamations" onclick="showSection('reclamations')"><span class="sidebar-icon">📣</span> Réclamations</button>
+    <button class="sidebar-item" id="sb-stats" onclick="showSection('stats')"><span class="sidebar-icon">📈</span> Statistiques</button>
+  </aside>
+
+  <main class="dash-content">
+
+    <!-- OVERVIEW -->
+    <div id="section-overview">
+      <div class="dash-header"><h2>📊 Tableau de Bord</h2><p>Vue d'ensemble de l'activité</p></div>
+      <div id="stats-cards" class="grid-4 mb-4"><div class="spinner"></div></div>
+      <div class="grid-2">
+        <div>
+          <h3 class="mb-3">🕐 Dernières réservations</h3>
+          <div id="recent-res"><div class="spinner"></div></div>
+        </div>
+        <div>
+          <h3 class="mb-3">🚗 Disponibilité chauffeurs</h3>
+          <div id="chauffeurs-dispo"><div class="spinner"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESERVATIONS -->
+    <div id="section-reservations" class="hidden">
+      <div class="dash-header flex justify-between items-center">
+        <div><h2>📋 Gestion des Réservations</h2><p>Confirmez, affectez et suivez les réservations</p></div>
+      </div>
+      <div class="flex gap-2 mb-4">
+        <button class="btn btn-ghost btn-sm" onclick="loadAdminRes('')">Toutes</button>
+        <button class="btn btn-ghost btn-sm" onclick="loadAdminRes('en_attente')">⏳ En attente</button>
+        <button class="btn btn-ghost btn-sm" onclick="loadAdminRes('confirmee')">✅ Confirmées</button>
+        <button class="btn btn-ghost btn-sm" onclick="loadAdminRes('annulee')">❌ Annulées</button>
+        <button class="btn btn-ghost btn-sm" onclick="loadAdminRes('terminee')">🏁 Terminées</button>
+      </div>
+      <div id="admin-res-list"><div class="spinner"></div></div>
+    </div>
+
+    <!-- CHAUFFEURS -->
+    <div id="section-chauffeurs" class="hidden">
+      <div class="dash-header flex justify-between items-center">
+        <div><h2>🚗 Gestion des Chauffeurs</h2></div>
+        <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-chauffeur')">+ Ajouter</button>
+      </div>
+      <div id="chauffeurs-list"><div class="spinner"></div></div>
+    </div>
+
+    <!-- TARIFS -->
+    <div id="section-tarifs" class="hidden">
+      <div class="dash-header"><h2>💰 Gestion des Tarifs</h2></div>
+      <div class="flex gap-2 mb-4">
+        <button class="btn btn-ghost btn-sm" onclick="loadTarifs('')">Tous</button>
+        <button class="btn btn-ghost btn-sm" onclick="loadTarifs('transfert')">Transfert</button>
+        <button class="btn btn-ghost btn-sm" onclick="loadTarifs('excursion')">Excursion</button>
+        <button class="btn btn-ghost btn-sm" onclick="loadTarifs('circuit')">Circuit</button>
+        <button class="btn btn-ghost btn-sm" onclick="loadTarifs('agafay')">Agafay</button>
+        <button class="btn btn-ghost btn-sm" onclick="loadTarifs('hammam')">Hammam</button>
+        <button class="btn btn-ghost btn-sm" onclick="loadTarifs('restaurant')">Restaurant</button>
+      </div>
+      <div id="tarifs-list"><div class="spinner"></div></div>
+    </div>
+
+    <!-- RECLAMATIONS -->
+    <div id="section-reclamations" class="hidden">
+      <div class="dash-header"><h2>📣 Réclamations Clients</h2></div>
+      <div id="reclamations-list"><div class="spinner"></div></div>
+    </div>
+
+    <!-- STATS -->
+    <div id="section-stats" class="hidden">
+      <div class="dash-header"><h2>📈 Statistiques</h2></div>
+      <div id="stats-content"><div class="spinner"></div></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL AFFECTER CHAUFFEUR -->
+<div class="modal-overlay" id="modal-affecter">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">🚗 Affecter un chauffeur</span><button class="modal-close">×</button></div>
+    <div id="affecter-content"></div>
+  </div>
+</div>
+
+<!-- MODAL DETAIL RES -->
+<div class="modal-overlay" id="modal-res-detail">
+  <div class="modal" style="max-width:600px;">
+    <div class="modal-header"><span class="modal-title">📋 Détail réservation</span><button class="modal-close">×</button></div>
+    <div id="res-detail-content"></div>
+  </div>
+</div>
+
+<!-- MODAL EDIT TARIF -->
+<div class="modal-overlay" id="modal-tarif">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">💰 Modifier le tarif</span><button class="modal-close">×</button></div>
+    <div id="tarif-edit-content"></div>
+  </div>
+</div>
+
+<!-- MODAL ADD CHAUFFEUR -->
+<div class="modal-overlay" id="modal-add-chauffeur">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">➕ Ajouter un chauffeur</span><button class="modal-close">×</button></div>
+    <div id="add-ch-alert"></div>
+    <div class="form-group mb-3"><label class="form-label">Nom complet</label><input class="form-control" id="ch-nom"></div>
+    <div class="form-group mb-3"><label class="form-label">Téléphone</label><input class="form-control" id="ch-tel"></div>
+    <div class="form-group mb-3"><label class="form-label">Marque véhicule</label><input class="form-control" id="ch-marque" placeholder="Mercedes, Audi..."></div>
+    <div class="form-group mb-3"><label class="form-label">Type véhicule</label><input class="form-control" id="ch-type" placeholder="Executive, SUV, Minivan..."></div>
+    <div class="form-group mb-4"><label class="form-label">Plaque</label><input class="form-control" id="ch-plaque" placeholder="12345-A-26"></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="addChauffeur()">Ajouter</button>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+const user = getUser();
+if (!user || user.role !== 'agence') { location.href = 'login.html'; }
+
+let allChauffeurs = [];
+
+function showSection(name) {
+  document.querySelectorAll('[id^="section-"]').forEach(s => s.classList.add('hidden'));
+  document.getElementById('section-' + name).classList.remove('hidden');
+  document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+  document.getElementById('sb-' + name)?.classList.add('active');
+  if (name === 'overview') loadOverview();
+  if (name === 'reservations') loadAdminRes('');
+  if (name === 'chauffeurs') loadChauffeurs();
+  if (name === 'tarifs') loadTarifs('');
+  if (name === 'reclamations') loadAdminReclamations();
+  if (name === 'stats') loadStats();
+}
+
+async function loadOverview() {
+  try {
+    const [stats, res, chauf] = await Promise.all([
+      apiFetch('/stats'),
+      apiFetch('/reservations'),
+      apiFetch('/chauffeurs')
+    ]);
+    document.getElementById('stats-cards').innerHTML = `
+      <div class="card p-3 text-center"><div class="stat-value">${stats.reservations.total}</div><div class="stat-label">Réservations Total</div></div>
+      <div class="card p-3 text-center"><div class="stat-value" style="color:var(--warning)">${stats.reservations.en_attente}</div><div class="stat-label">En Attente</div></div>
+      <div class="card p-3 text-center"><div class="stat-value" style="color:var(--success)">${stats.chauffeurs.total}</div><div class="stat-label">Chauffeurs</div></div>
+      <div class="card p-3 text-center"><div class="stat-value" style="color:var(--primary)">${stats.personnel}</div><div class="stat-label">Personnel</div></div>
+    `;
+    const recent = res.slice(0,5);
+    document.getElementById('recent-res').innerHTML = `<div class="table-wrap"><table><thead><tr><th>Réf.</th><th>Client</th><th>Service</th><th>Statut</th></tr></thead><tbody>
+      ${recent.map(r=>`<tr><td class="text-primary font-bold">${r.reference}</td><td>${r.client?.prenom||''} ${r.client?.nom||''}</td><td>${serviceIcon(r.type_service)}</td><td>${badgeHTML(r.statut)}</td></tr>`).join('')}
+    </tbody></table></div>`;
+    const dispo = chauf.filter(c => c.statut === 'disponible').slice(0,5);
+    document.getElementById('chauffeurs-dispo').innerHTML = dispo.length ? dispo.map(c=>`
+      <div class="card p-3 mb-2 flex items-center gap-3">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--success);display:flex;align-items:center;justify-content:center;">🚗</div>
+        <div><div class="font-bold text-sm">${c.nom_complet}</div><div class="text-xs text-muted">${c.vehicule_marque} — ${c.plaque}</div></div>
+        <span class="badge badge-success ml-auto">Dispo</span>
+      </div>`).join('') : '<div class="alert alert-warning">Aucun chauffeur disponible</div>';
+  } catch(e) { console.error(e); }
+}
+
+async function loadAdminRes(statut) {
+  const el = document.getElementById('admin-res-list');
+  el.innerHTML = '<div class="spinner"></div>';
+  try {
+    const data = await apiFetch('/reservations' + (statut ? '?statut=' + statut : ''));
+    if (!data.length) { el.innerHTML = '<div class="alert alert-warning">Aucune réservation.</div>'; return; }
+    el.innerHTML = `<div class="table-wrap"><table><thead><tr><th>Réf.</th><th>Client</th><th>Service</th><th>Destination</th><th>Date</th><th>Pax</th><th>Tarif</th><th>Statut</th><th>Chauffeur</th><th>Actions</th></tr></thead><tbody>
+      ${data.map(r=>`<tr>
+        <td class="text-primary font-bold">${r.reference}</td>
+        <td>${r.client?r.client.prenom+' '+r.client.nom:'-'}</td>
+        <td>${serviceIcon(r.type_service)}</td>
+        <td>${r.destination}</td>
+        <td>${formatDate(r.date_depart)}</td>
+        <td>👥${r.nombre_pax}</td>
+        <td>${formatPrice(r.tarif)}</td>
+        <td>${badgeHTML(r.statut)}</td>
+        <td>${r.chauffeur?r.chauffeur.nom_complet:'<span class="text-muted">—</span>'}</td>
+        <td class="flex gap-2">
+          <button class="btn btn-ghost btn-sm" onclick="showResDetail(${r.id})">👁️</button>
+          ${r.statut==='en_attente'?`<button class="btn btn-primary btn-sm" onclick="showAffecter(${r.id})">🚗</button>`:''}
+        </td>
+      </tr>`).join('')}
+    </tbody></table></div>`;
+  } catch(e) { el.innerHTML = '<div class="alert alert-danger">Erreur</div>'; }
+}
+
+let currentResId = null;
+function showAffecter(rid) {
+  currentResId = rid;
+  loadChauffeursForModal();
+  openModal('modal-affecter');
+}
+
+async function loadChauffeursForModal() {
+  try {
+    const data = await apiFetch('/chauffeurs?statut=disponible');
+    document.getElementById('affecter-content').innerHTML = data.length ? `
+      <div class="form-group mb-4">
+        <label class="form-label">Sélectionner un chauffeur disponible</label>
+        <select class="form-control" id="sel-chauffeur">
+          ${data.map(c=>`<option value="${c.id}">${c.nom_complet} — ${c.vehicule_marque} (${c.plaque})</option>`).join('')}
+        </select>
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="confirmerAffectation()">✅ Confirmer l'affectation</button>
+    ` : '<div class="alert alert-warning">Aucun chauffeur disponible.</div>';
+  } catch(e) {}
+}
+
+async function confirmerAffectation() {
+  try {
+    await apiFetch('/reservations/' + currentResId + '/affecter', {
+      method:'PUT', body: JSON.stringify({ chauffeur_id: parseInt(document.getElementById('sel-chauffeur').value) })
+    });
+    closeModal('modal-affecter');
+    toast('✅ Chauffeur affecté!');
+    loadAdminRes('');
+  } catch(e) { toast(e.message, 'danger'); }
+}
+
+async function showResDetail(id) {
+  try {
+    const r = await apiFetch('/reservations/' + id);
+    document.getElementById('res-detail-content').innerHTML = `
+      <div class="grid-2 gap-3">
+        <div><div class="text-xs text-muted">Référence</div><div class="font-bold text-primary mt-1">${r.reference}</div></div>
+        <div><div class="text-xs text-muted">Statut</div><div class="mt-1">${badgeHTML(r.statut)}</div></div>
+        <div><div class="text-xs text-muted">Client</div><div class="mt-1">${r.client?.prenom} ${r.client?.nom}</div></div>
+        <div><div class="text-xs text-muted">Téléphone</div><div class="mt-1">${r.client?.telephone||'-'}</div></div>
+        <div><div class="text-xs text-muted">Service</div><div class="mt-1">${serviceIcon(r.type_service)} ${r.nom_service}</div></div>
+        <div><div class="text-xs text-muted">Tarif</div><div class="font-bold text-primary mt-1">${formatPrice(r.tarif)}</div></div>
+        <div><div class="text-xs text-muted">Départ</div><div class="mt-1">${r.depart}</div></div>
+        <div><div class="text-xs text-muted">Destination</div><div class="mt-1">${r.destination}</div></div>
+        <div><div class="text-xs text-muted">Date</div><div class="mt-1">${formatDate(r.date_depart)}</div></div>
+        <div><div class="text-xs text-muted">Voyageurs</div><div class="mt-1">👥 ${r.nombre_pax}</div></div>
+        ${r.chauffeur?`<div style="grid-column:1/-1"><div class="text-xs text-muted">Chauffeur</div><div class="mt-1 font-bold">🚗 ${r.chauffeur.nom_complet} — ${r.chauffeur.vehicule_marque} — ${r.chauffeur.plaque}</div></div>`:''}
+        ${r.notes?`<div style="grid-column:1/-1"><div class="text-xs text-muted">Notes</div><div class="mt-1 text-sm">${r.notes}</div></div>`:''}
+      </div>
+    `;
+    openModal('modal-res-detail');
+  } catch(e) {}
+}
+
+async function loadChauffeurs() {
+  const el = document.getElementById('chauffeurs-list');
+  try {
+    const data = await apiFetch('/chauffeurs');
+    allChauffeurs = data;
+    el.innerHTML = `<div class="table-wrap"><table><thead><tr><th>Nom</th><th>Téléphone</th><th>Véhicule</th><th>Plaque</th><th>Statut</th><th>Note</th><th>Courses</th></tr></thead><tbody>
+      ${data.map(c=>`<tr>
+        <td class="font-bold">${c.nom_complet}</td>
+        <td>${c.telephone}</td>
+        <td>${c.vehicule_marque} <span class="text-muted text-xs">(${c.vehicule_type})</span></td>
+        <td>${c.plaque}</td>
+        <td>${c.statut==='disponible'?'<span class="badge badge-success">Disponible</span>':c.statut==='en_course'?'<span class="badge badge-warning">En course</span>':'<span class="badge badge-muted">'+c.statut+'</span>'}</td>
+        <td>⭐ ${c.note_moyenne}</td>
+        <td>${c.total_courses}</td>
+      </tr>`).join('')}
+    </tbody></table></div>`;
+  } catch(e) { el.innerHTML = '<div class="alert alert-danger">Erreur</div>'; }
+}
+
+async function addChauffeur() {
+  try {
+    await apiFetch('/chauffeurs', {
+      method:'POST',
+      body: JSON.stringify({ nom_complet: document.getElementById('ch-nom').value, telephone: document.getElementById('ch-tel').value, vehicule_marque: document.getElementById('ch-marque').value, vehicule_type: document.getElementById('ch-type').value, plaque: document.getElementById('ch-plaque').value })
+    });
+    closeModal('modal-add-chauffeur');
+    toast('✅ Chauffeur ajouté!');
+    loadChauffeurs();
+  } catch(e) { document.getElementById('add-ch-alert').innerHTML = `<div class="alert alert-danger">${e.message}</div>`; }
+}
+
+async function loadTarifs(type) {
+  const el = document.getElementById('tarifs-list');
+  el.innerHTML = '<div class="spinner"></div>';
+  try {
+    const data = await apiFetch('/tarifs' + (type ? '?type=' + type : ''));
+    el.innerHTML = `<div class="table-wrap"><table><thead><tr><th>Service</th><th>Nom</th><th>Départ</th><th>Destination</th><th>Pax</th><th>Prix</th><th>Repas</th><th>Guide</th><th>Action</th></tr></thead><tbody>
+      ${data.map(t=>`<tr>
+        <td>${serviceIcon(t.type_service)}</td>
+        <td>${t.nom_fr}</td>
+        <td>${t.depart}</td>
+        <td>${t.destination}</td>
+        <td>${t.pax_min}–${t.pax_max}</td>
+        <td class="font-bold text-primary">${formatPrice(t.prix)}</td>
+        <td>${t.repas_inclus?'✅':'—'}</td>
+        <td>${t.guide_inclus?'✅':'—'}</td>
+        <td><button class="btn btn-ghost btn-sm" onclick="editTarif(${JSON.stringify(t).replace(/"/g,'&quot;')})">✏️</button></td>
+      </tr>`).join('')}
+    </tbody></table></div>`;
+  } catch(e) { el.innerHTML = '<div class="alert alert-danger">Erreur</div>'; }
+}
+
+function editTarif(tarif) {
+  document.getElementById('tarif-edit-content').innerHTML = `
+    <div id="tarif-alert"></div>
+    <div class="form-group mb-3"><label class="form-label">Prix (MAD)</label><input type="number" class="form-control" id="t-prix" value="${tarif.prix}"></div>
+    <div class="form-group mb-3"><label class="form-label">Nom FR</label><input class="form-control" id="t-nom" value="${tarif.nom_fr}"></div>
+    <div class="form-group mb-3"><label class="form-label">Durée</label><input class="form-control" id="t-duree" value="${tarif.duree}"></div>
+    <div class="flex gap-3 mb-4">
+      <label class="flex items-center gap-2"><input type="checkbox" id="t-repas" ${tarif.repas_inclus?'checked':''}> Repas inclus</label>
+      <label class="flex items-center gap-2"><input type="checkbox" id="t-guide" ${tarif.guide_inclus?'checked':''}> Guide inclus</label>
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="saveTarif(${tarif.id})">💾 Enregistrer</button>
+  `;
+  openModal('modal-tarif');
+}
+
+async function saveTarif(id) {
+  try {
+    await apiFetch('/tarifs/' + id, {
+      method:'PUT',
+      body: JSON.stringify({ prix: parseFloat(document.getElementById('t-prix').value), nom_fr: document.getElementById('t-nom').value, duree: document.getElementById('t-duree').value, repas_inclus: document.getElementById('t-repas').checked, guide_inclus: document.getElementById('t-guide').checked })
+    });
+    closeModal('modal-tarif');
+    toast('✅ Tarif mis à jour!');
+    loadTarifs('');
+  } catch(e) { document.getElementById('tarif-alert').innerHTML = `<div class="alert alert-danger">${e.message}</div>`; }
+}
+
+async function loadAdminReclamations() {
+  const el = document.getElementById('reclamations-list');
+  try {
+    const data = await apiFetch('/reclamations');
+    if (!data.length) { el.innerHTML = '<div class="alert alert-success">Aucune réclamation en cours.</div>'; return; }
+    el.innerHTML = `<div class="table-wrap"><table><thead><tr><th>Client</th><th>Sujet</th><th>Message</th><th>Statut</th><th>Date</th></tr></thead><tbody>
+      ${data.map(r=>`<tr>
+        <td>${r.client?.prenom} ${r.client?.nom}</td>
+        <td class="font-bold">${r.sujet}</td>
+        <td class="text-sm text-muted">${r.message.slice(0,80)}...</td>
+        <td>${badgeHTML(r.statut==='ouverte'?'en_attente':r.statut==='traitee'?'confirmee':'annulee')}</td>
+        <td>${formatDate(r.created_at)}</td>
+      </tr>`).join('')}
+    </tbody></table></div>`;
+  } catch(e) {}
+}
+
+async function loadStats() {
+  const el = document.getElementById('stats-content');
+  try {
+    const stats = await apiFetch('/stats');
+    el.innerHTML = `
+      <div class="grid-4 mb-4">
+        <div class="card p-3 text-center"><div class="stat-value">${stats.reservations.total}</div><div class="stat-label">Total Réservations</div></div>
+        <div class="card p-3 text-center"><div class="stat-value" style="color:var(--success)">${formatPrice(stats.revenue)}</div><div class="stat-label">Chiffre d'Affaires</div></div>
+        <div class="card p-3 text-center"><div class="stat-value">${stats.chauffeurs.total}</div><div class="stat-label">Chauffeurs</div></div>
+        <div class="card p-3 text-center"><div class="stat-value">${stats.personnel||0}</div><div class="stat-label">Personnel</div></div>
+      </div>
+      <div class="grid-2">
+        <div>
+          <h3 class="mb-3">📊 Par statut</h3>
+          <div class="card p-4">
+            ${Object.entries(stats.reservations).filter(([k])=>k!=='total').map(([k,v])=>`
+              <div class="flex justify-between items-center mb-3">
+                <span>${badgeHTML(k)}</span>
+                <span class="font-bold">${v}</span>
+              </div>
+              <div style="background:var(--border);border-radius:4px;height:6px;margin-bottom:12px;">
+                <div style="background:var(--primary);height:6px;border-radius:4px;width:${stats.reservations.total?Math.round(v/stats.reservations.total*100):0}%"></div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        <div>
+          <h3 class="mb-3">🌟 Par service</h3>
+          <div class="card p-4">
+            ${stats.by_service.map(s=>`
+              <div class="flex justify-between items-center mb-2">
+                <span>${serviceIcon(s.type)}</span>
+                <span class="text-sm">${s.count} réservations</span>
+                <span class="font-bold text-primary">${formatPrice(s.revenue)}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  } catch(e) { el.innerHTML = '<div class="alert alert-danger">Erreur stats</div>'; }
+}
+
+loadOverview();
+</script>
+</body>
+</html>

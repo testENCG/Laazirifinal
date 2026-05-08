@@ -1,0 +1,17 @@
+[phases.setup]
+nixPkgs = ["...", "nodejs-18_x"]
+
+[phases.install]
+cmds = [
+    "cd frontend-react && npm install",
+    "pip install -r backend/requirements.txt"
+]
+
+[phases.build]
+cmds = [
+    "cd frontend-react && npx vite build",
+    "cd backend && python seed_data.py"
+]
+
+[start]
+cmd = "cd backend && python app.py"

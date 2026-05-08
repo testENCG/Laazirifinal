@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>LAAZIRI TRAVEL — Agence Touristique Marrakech</title>
+  <meta name="description" content="LAAZIRI TRAVEL - Transferts aéroport, excursions, circuits et activités à Marrakech. Réservez en ligne facilement.">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .services-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+    @media(max-width:900px) { .services-grid { grid-template-columns:repeat(2,1fr); } }
+    @media(max-width:500px) { .services-grid { grid-template-columns:1fr 1fr; } }
+    .service-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:24px 16px; text-align:center; cursor:pointer; transition:all .25s; }
+    .service-card:hover { border-color:var(--primary); transform:translateY(-4px); box-shadow:0 12px 32px rgba(0,168,232,0.2); }
+    .service-card .icon { font-size:2.2rem; margin-bottom:10px; }
+    .service-card .title { font-weight:700; font-size:.95rem; margin-bottom:4px; }
+    .service-card .from { font-size:.82rem; color:var(--primary); font-weight:600; }
+    .excursion-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+    @media(max-width:900px) { .excursion-grid { grid-template-columns:1fr 1fr; } }
+    @media(max-width:600px) { .excursion-grid { grid-template-columns:1fr; } }
+    .exc-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; transition:all .3s; }
+    .exc-card:hover { transform:translateY(-6px); box-shadow:0 16px 40px rgba(0,0,0,0.5); border-color:rgba(0,168,232,0.3); }
+    .exc-card-img { height:200px; overflow:hidden; position:relative; }
+    .exc-card-img img { width:100%; height:100%; object-fit:cover; transition:transform .4s; }
+    .exc-card:hover .exc-card-img img { transform:scale(1.06); }
+    .exc-card-img .price-tag { position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px); color:#fff; font-weight:800; font-size:.95rem; padding:4px 12px; border-radius:100px; }
+    .exc-card-body { padding:16px 20px; }
+    .exc-card-title { font-weight:700; font-size:1rem; margin-bottom:4px; }
+    .exc-card-route { font-size:.82rem; color:var(--muted); margin-bottom:10px; }
+    .exc-card-footer { display:flex; justify-content:space-between; align-items:center; }
+    .avis-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+    @media(max-width:900px) { .avis-grid { grid-template-columns:1fr 1fr; } }
+    @media(max-width:600px) { .avis-grid { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a class="navbar-brand" href="/"><span>🌴 LAAZIRI TRAVEL</span></a>
+  <div class="navbar-nav">
+    <a class="nav-link" href="#services">Services</a>
+    <a class="nav-link" href="#excursions">Excursions</a>
+    <a class="nav-link" href="#avis">Avis</a>
+    <a class="nav-link" href="#contact">Contact</a>
+    <div id="nav-guest" class="flex gap-2">
+      <a class="btn btn-ghost btn-sm" href="pages/login.html">Connexion</a>
+      <a class="btn btn-primary btn-sm" href="pages/register.html">S'inscrire</a>
+    </div>
+    <div id="nav-auth" class="flex gap-2 hidden">
+      <a class="btn btn-ghost btn-sm" href="pages/dashboard.html" id="nav-dash">👤 <span id="nav-username"></span></a>
+      <button class="btn btn-ghost btn-sm" onclick="logout()">Déconnexion</button>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <div class="hero-badge">✨ Agence #1 à Marrakech</div>
+    <h1>Votre aventure marocaine <span>commence ici</span></h1>
+    <p>Transferts aéroport, excursions exclusives, circuits multi-jours et activités inoubliables. LAAZIRI TRAVEL, votre partenaire de confiance.</p>
+
+    <!-- SEARCH BOX -->
+    <div class="search-box mt-4">
+      <div class="search-tabs">
+        <button class="search-tab active" onclick="setTab(this,'transfert')">✈️ Transfert</button>
+        <button class="search-tab" onclick="setTab(this,'excursion')">🏔️ Excursion</button>
+        <button class="search-tab" onclick="setTab(this,'circuit')">🗺️ Circuit</button>
+        <button class="search-tab" onclick="setTab(this,'agafay')">🏜️ Agafay</button>
+        <button class="search-tab" onclick="setTab(this,'hammam')">♨️ Hammam/SPA</button>
+        <button class="search-tab" onclick="setTab(this,'restaurant')">🍽️ Restaurant</button>
+      </div>
+      <div class="search-fields">
+        <div class="form-group">
+          <label class="form-label">Départ</label>
+          <select class="form-control" id="s-depart">
+            <option value="">Tous les départs</option>
+            <option value="Aéroport Marrakech">🛬 Aéroport Marrakech</option>
+            <option value="Marrakech">🏙️ Marrakech</option>
+            <option value="Riad">🏠 Votre Riad</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Voyageurs</label>
+          <select class="form-control" id="s-pax">
+            <option value="">Tous</option>
+            <option value="1">1 personne</option>
+            <option value="2">2 personnes</option>
+            <option value="3">3 personnes</option>
+            <option value="4">4 personnes</option>
+            <option value="5">5+ personnes</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date</label>
+          <input type="date" class="form-control" id="s-date">
+        </div>
+        <button class="btn btn-primary" onclick="doSearch()" style="height:46px;white-space:nowrap;">
+          🔍 Rechercher
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar" style="margin-top:-1px;">
+  <div class="stat-item"><div class="stat-value">5000+</div><div class="stat-label">Clients satisfaits</div></div>
+  <div class="stat-item"><div class="stat-value">21</div><div class="stat-label">Chauffeurs experts</div></div>
+  <div class="stat-item"><div class="stat-value">24</div><div class="stat-label">Personnel qualifié</div></div>
+  <div class="stat-item"><div class="stat-value">⭐ 4.9</div><div class="stat-label">Note moyenne</div></div>
+  <div class="stat-item"><div class="stat-value">24/7</div><div class="stat-label">Service client</div></div>
+</div>
+
+<!-- SERVICES -->
+<section class="section" id="services">
+  <h2 class="section-title">Nos Services</h2>
+  <p class="section-sub">Tout ce dont vous avez besoin pour votre séjour à Marrakech</p>
+  <div class="services-grid">
+    <div class="service-card" onclick="goSearch('transfert')">
+      <div class="icon">✈️</div>
+      <div class="title">Transferts</div>
+      <div class="text-muted text-xs mb-2">Aéroport, hôtel, riad</div>
+      <div class="from">Dès 100 MAD</div>
+    </div>
+    <div class="service-card" onclick="goSearch('excursion')">
+      <div class="icon">🏔️</div>
+      <div class="title">Excursions</div>
+      <div class="text-muted text-xs mb-2">Ouzoud, Ourika, Essaouira...</div>
+      <div class="from">Dès 1 200 MAD</div>
+    </div>
+    <div class="service-card" onclick="goSearch('circuit')">
+      <div class="icon">🗺️</div>
+      <div class="title">Circuits Multi-jours</div>
+      <div class="text-muted text-xs mb-2">Merzouga, kasbahs, désert</div>
+      <div class="from">Dès 8 950 MAD</div>
+    </div>
+    <div class="service-card" onclick="goSearch('agafay')">
+      <div class="icon">🏜️</div>
+      <div class="title">Agafay Desert</div>
+      <div class="text-muted text-xs mb-2">Quad, dromadaire, dîner</div>
+      <div class="from">Dès 1 800 MAD</div>
+    </div>
+    <div class="service-card" onclick="goSearch('hammam')">
+      <div class="icon">♨️</div>
+      <div class="title">Hammam & SPA</div>
+      <div class="text-muted text-xs mb-2">Gommage, massage, détente</div>
+      <div class="from">Dès 350 MAD</div>
+    </div>
+    <div class="service-card" onclick="goSearch('restaurant')">
+      <div class="icon">🍽️</div>
+      <div class="title">Restaurants</div>
+      <div class="text-muted text-xs mb-2">Dîners en riad avec spectacle</div>
+      <div class="from">Dès 250 MAD</div>
+    </div>
+    <div class="service-card" onclick="goSearch('ville')">
+      <div class="icon">🏙️</div>
+      <div class="title">City Tour</div>
+      <div class="text-muted text-xs mb-2">Médina, souks, palais</div>
+      <div class="from">Dès 800 MAD</div>
+    </div>
+    <div class="service-card" onclick="goSearch('golf')">
+      <div class="icon">⛳</div>
+      <div class="title">Golf</div>
+      <div class="text-muted text-xs mb-2">Meilleurs golfs de Marrakech</div>
+      <div class="from">Dès 300 MAD</div>
+    </div>
+  </div>
+</section>
+
+<!-- EXCURSIONS VEDETTES -->
+<section class="section" id="excursions" style="background:rgba(22,32,53,0.5);">
+  <h2 class="section-title">⭐ Excursions Populaires</h2>
+  <p class="section-sub">Les aventures préférées de nos voyageurs</p>
+  <div class="excursion-grid" id="featured-cards">
+    <div class="spinner"></div>
+  </div>
+  <div class="text-center mt-4">
+    <a class="btn btn-outline" href="pages/search.html?type=excursion">Voir toutes les excursions →</a>
+  </div>
+</section>
+
+<!-- AVIS -->
+<section class="section" id="avis">
+  <h2 class="section-title">💬 Avis Clients</h2>
+  <p class="section-sub">Ce que disent nos voyageurs</p>
+  <div class="avis-grid" id="avis-cards">
+    <div class="spinner"></div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="section" id="contact" style="background:rgba(22,32,53,0.5);">
+  <div style="max-width:700px;margin:0 auto;text-align:center;">
+    <h2 class="section-title">📞 Contactez-nous</h2>
+    <p class="section-sub">Notre équipe est disponible 24h/24 pour vous accompagner</p>
+    <div class="grid-3 mt-4">
+      <a href="https://wa.me/212652640646" target="_blank" class="card p-3 text-center" style="text-decoration:none;">
+        <div style="font-size:2rem;margin-bottom:10px;">💬</div>
+        <div class="font-bold">WhatsApp</div>
+        <div class="text-muted text-sm mt-1">+212 652 640 646</div>
+        <div class="btn btn-primary btn-sm mt-3" style="justify-content:center;display:flex;">Écrire</div>
+      </a>
+      <a href="tel:+212652640646" class="card p-3 text-center" style="text-decoration:none;">
+        <div style="font-size:2rem;margin-bottom:10px;">📱</div>
+        <div class="font-bold">Appel</div>
+        <div class="text-muted text-sm mt-1">+212 652 640 646</div>
+        <div class="btn btn-outline btn-sm mt-3" style="justify-content:center;display:flex;">Appeler</div>
+      </a>
+      <a href="mailto:contact@laaziritravel.com" class="card p-3 text-center" style="text-decoration:none;">
+        <div style="font-size:2rem;margin-bottom:10px;">✉️</div>
+        <div class="font-bold">Email</div>
+        <div class="text-muted text-sm mt-1">contact@laaziritravel.com</div>
+        <div class="btn btn-outline btn-sm mt-3" style="justify-content:center;display:flex;">Écrire</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <span style="font-size:1.4rem;font-weight:800;color:var(--primary);">🌴 LAAZIRI TRAVEL</span>
+      <p>Votre agence touristique de confiance à Marrakech. Transferts, excursions et circuits sur mesure depuis 2010.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Services</h4>
+      <a href="pages/search.html?type=transfert">Transferts</a>
+      <a href="pages/search.html?type=excursion">Excursions</a>
+      <a href="pages/search.html?type=circuit">Circuits</a>
+      <a href="pages/search.html?type=agafay">Agafay</a>
+    </div>
+    <div class="footer-col">
+      <h4>Compte</h4>
+      <a href="pages/login.html">Connexion</a>
+      <a href="pages/register.html">Inscription</a>
+      <a href="pages/dashboard.html">Mon espace</a>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <a href="tel:+212652640646">+212 652 640 646</a>
+      <a href="mailto:contact@laaziritravel.com">contact@laaziritravel.com</a>
+      <a href="#">Marrakech, Maroc</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2024 LAAZIRI TRAVEL — Tous droits réservés</p>
+    <p>Projet ENCGM</p>
+  </div>
+</footer>
+
+<a class="wa-float" href="https://wa.me/212652640646" target="_blank">💬</a>
+
+<script src="js/api.js"></script>
+<script>
+let currentType = 'transfert';
+
+const EXCURSION_IMGS = {
+  "Ouzoud":     "https://images.unsplash.com/photo-1548020030-7db8e9503e84?w=600&q=80",
+  "Agadir":     "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=80",
+  "Essaouira":  "https://images.unsplash.com/photo-1585320806297-9794b3e4aaae?w=600&q=80",
+  "Ouarzazate": "https://images.unsplash.com/photo-1539020140153-e479b8d380f1?w=600&q=80",
+  "Ourika":     "https://images.unsplash.com/photo-1568322445389-f64ac2515020?w=600&q=80",
+  "Imlil":      "https://images.unsplash.com/photo-1489493887464-892be6d1daae?w=600&q=80",
+  "Merzouga":   "https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=600&q=80",
+  "Montgolfière":"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80",
+};
+
+function getImg(dest) {
+  for (const [k, v] of Object.entries(EXCURSION_IMGS)) {
+    if (dest.includes(k)) return v;
+  }
+  return "https://images.unsplash.com/photo-1539635278303-d4002c07eae3?w=600&q=80";
+}
+
+function setTab(el, type) {
+  document.querySelectorAll('.search-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  currentType = type;
+}
+function goSearch(type) {
+  window.location.href = `pages/search.html?type=${type}`;
+}
+function doSearch() {
+  const pax = document.getElementById('s-pax').value;
+  const depart = document.getElementById('s-depart').value;
+  const date = document.getElementById('s-date').value;
+  const p = new URLSearchParams({ type: currentType });
+  if (pax) p.set('pax', pax);
+  if (depart) p.set('depart', depart);
+  if (date) p.set('date', date);
+  window.location.href = `pages/search.html?${p}`;
+}
+
+async function loadFeatured() {
+  try {
+    const data = await apiFetch('/tarifs?type=excursion');
+    // Deduplicate by destination
+    const seen = {};
+    const items = data.filter(t => {
+      if (seen[t.destination]) return false;
+      seen[t.destination] = true;
+      return true;
+    }).slice(0, 6);
+
+    document.getElementById('featured-cards').innerHTML = items.map(t => `
+      <div class="exc-card fade-in">
+        <div class="exc-card-img">
+          <img src="${getImg(t.destination)}" alt="${t.destination}" loading="lazy">
+          <div class="price-tag">Dès ${formatPrice(t.prix)}</div>
+        </div>
+        <div class="exc-card-body">
+          <div class="card-badges mb-2">
+            ${t.repas_inclus ? '<span class="badge badge-success">🍽️ Repas</span>' : ''}
+            ${t.guide_inclus ? '<span class="badge badge-primary">🎤 Guide</span>' : ''}
+            <span class="badge badge-muted">⏱️ ${t.duree}</span>
+          </div>
+          <div class="exc-card-title">${t.destination}</div>
+          <div class="exc-card-route">📍 ${t.depart} → ${t.destination}</div>
+          <div class="exc-card-footer">
+            <span class="text-xs text-muted">${t.pax_min}–${t.pax_max} pers.</span>
+            <a class="btn btn-primary btn-sm" href="pages/search.html?type=excursion">Réserver</a>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  } catch(e) {
+    document.getElementById('featured-cards').innerHTML = '<p class="text-muted">Impossible de charger les excursions.</p>';
+  }
+}
+
+async function loadAvis() {
+  try {
+    const data = await apiFetch('/avis');
+    if (!data.length) { document.getElementById('avis-cards').innerHTML = '<p class="text-muted">Aucun avis pour le moment.</p>'; return; }
+    document.getElementById('avis-cards').innerHTML = data.slice(0,6).map(a => `
+      <div class="card p-3 fade-in">
+        <div class="flex gap-1 mb-2">${'⭐'.repeat(a.note)}</div>
+        <p class="text-sm" style="line-height:1.65;font-style:italic;color:var(--text);">"${a.commentaire}"</p>
+        <div class="flex items-center gap-2 mt-3">
+          <div style="width:36px;height:36px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;flex-shrink:0;">
+            ${a.client ? a.client.prenom[0].toUpperCase() : '?'}
+          </div>
+          <div>
+            <div class="font-bold text-sm">${a.client ? a.client.prenom + ' ' + a.client.nom : 'Client'}</div>
+            <div class="text-xs text-muted">${formatDate(a.created_at).split(',')[0]}</div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  } catch(e) {
+    document.getElementById('avis-cards').innerHTML = '<p class="text-muted">Aucun avis disponible.</p>';
+  }
+}
+
+function logout() { clearAuth(); window.location.reload(); }
+
+const user = getUser();
+if (user) {
+  document.getElementById('nav-guest').classList.add('hidden');
+  document.getElementById('nav-auth').classList.remove('hidden');
+  document.getElementById('nav-username').textContent = user.prenom;
+  const dash = document.getElementById('nav-dash');
+  if (user.role === 'agence') dash.href = 'pages/admin.html';
+  else if (user.role === 'chauffeur') dash.href = 'pages/chauffeur.html';
+}
+
+document.getElementById('s-date').min = new Date().toISOString().split('T')[0];
+loadFeatured();
+loadAvis();
+</script>
+</body>
+</html>

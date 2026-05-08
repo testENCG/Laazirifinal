@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <!-- Gold gradient for letters and eagle -->
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F2D06B"/>
+      <stop offset="30%" stop-color="#C8A84E"/>
+      <stop offset="60%" stop-color="#D4AF37"/>
+      <stop offset="100%" stop-color="#B8942E"/>
+    </linearGradient>
+    <!-- Lighter gold for highlights -->
+    <linearGradient id="goldLight" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FAE89D"/>
+      <stop offset="100%" stop-color="#D4AF37"/>
+    </linearGradient>
+    <!-- Ring gradient -->
+    <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#C8A84E"/>
+      <stop offset="50%" stop-color="#D4AF37"/>
+      <stop offset="100%" stop-color="#A07828"/>
+    </linearGradient>
+    <!-- Dark background gradient -->
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#2A2A3A"/>
+      <stop offset="100%" stop-color="#1A1A28"/>
+    </radialGradient>
+    <!-- Subtle glow -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <!-- Drop shadow for depth -->
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="250" fill="url(#bgGrad)"/>
+  
+  <!-- Outer decorative ring -->
+  <circle cx="256" cy="256" r="235" fill="none" stroke="url(#ringGrad)" stroke-width="2.5" opacity="0.6"/>
+  
+  <!-- Inner decorative ring with ornamental pattern -->
+  <circle cx="256" cy="256" r="220" fill="none" stroke="url(#ringGrad)" stroke-width="1" opacity="0.3"/>
+  
+  <!-- Fine decorative dots around the ring -->
+  <g opacity="0.4">
+    <circle cx="256" cy="30" r="2.5" fill="url(#gold)"/>
+    <circle cx="256" cy="482" r="2.5" fill="url(#gold)"/>
+    <circle cx="30" cy="256" r="2.5" fill="url(#gold)"/>
+    <circle cx="482" cy="256" r="2.5" fill="url(#gold)"/>
+    <!-- Diagonal dots -->
+    <circle cx="96" cy="96" r="2" fill="url(#gold)"/>
+    <circle cx="416" cy="96" r="2" fill="url(#gold)"/>
+    <circle cx="96" cy="416" r="2" fill="url(#gold)"/>
+    <circle cx="416" cy="416" r="2" fill="url(#gold)"/>
+    <!-- Additional ring dots -->
+    <circle cx="160" cy="48" r="1.5" fill="url(#gold)"/>
+    <circle cx="352" cy="48" r="1.5" fill="url(#gold)"/>
+    <circle cx="160" cy="464" r="1.5" fill="url(#gold)"/>
+    <circle cx="352" cy="464" r="1.5" fill="url(#gold)"/>
+    <circle cx="48" cy="160" r="1.5" fill="url(#gold)"/>
+    <circle cx="464" cy="160" r="1.5" fill="url(#gold)"/>
+    <circle cx="48" cy="352" r="1.5" fill="url(#gold)"/>
+    <circle cx="464" cy="352" r="1.5" fill="url(#gold)"/>
+  </g>
+
+  <!-- Eagle / Phoenix Wings - Stylized -->
+  <g filter="url(#glow)" transform="translate(256, 195)" fill="url(#goldLight)">
+    <!-- Left wing -->
+    <path d="M-8,-15 C-25,-35 -55,-58 -85,-62 C-70,-45 -55,-30 -40,-20 C-55,-25 -80,-35 -105,-32 C-85,-18 -60,-8 -40,-5 C-55,-5 -75,0 -90,8 C-68,8 -45,5 -28,0 C-20,-2 -12,-5 -8,-10 Z" opacity="0.95"/>
+    <!-- Right wing -->
+    <path d="M8,-15 C25,-35 55,-58 85,-62 C70,-45 55,-30 40,-20 C55,-25 80,-35 105,-32 C85,-18 60,-8 40,-5 C55,-5 75,0 90,8 C68,8 45,5 28,0 C20,-2 12,-5 8,-10 Z" opacity="0.95"/>
+    <!-- Eagle head -->
+    <ellipse cx="0" cy="-20" rx="8" ry="10" opacity="0.9"/>
+    <!-- Beak -->
+    <path d="M0,-12 L4,-8 L0,-4 L-4,-8 Z" fill="#FAE89D" opacity="0.8"/>
+    <!-- Tail feathers -->
+    <path d="M-6,0 C-4,15 -2,25 0,30 C2,25 4,15 6,0 C4,5 2,8 0,10 C-2,8 -4,5 -6,0 Z" opacity="0.8"/>
+  </g>
+
+  <!-- Letter L -->
+  <g filter="url(#shadow)">
+    <path d="M135,230 L135,390 L225,390 L225,370 C225,365 222,360 217,360 L175,360 L175,230 C175,225 172,222 167,222 L143,222 C138,222 135,225 135,230 Z" fill="url(#gold)"/>
+    <!-- Serif on L top -->
+    <rect x="128" y="218" width="54" height="6" rx="2" fill="url(#gold)" opacity="0.8"/>
+    <!-- Serif on L bottom -->
+    <rect x="128" y="386" width="104" height="6" rx="2" fill="url(#gold)" opacity="0.8"/>
+  </g>
+
+  <!-- Letter T -->
+  <g filter="url(#shadow)">
+    <!-- T vertical bar -->
+    <path d="M283,258 L283,390 C283,395 286,398 291,398 L315,398 C320,398 323,395 323,390 L323,258" fill="url(#gold)"/>
+    <!-- T horizontal bar -->
+    <path d="M255,230 L255,252 C255,255 257,258 261,258 L345,258 C349,258 351,255 351,252 L351,230 C351,227 349,224 345,224 L261,224 C257,224 255,227 255,230 Z" fill="url(#gold)"/>
+    <!-- Serif on T top -->
+    <rect x="248" y="220" width="110" height="6" rx="2" fill="url(#gold)" opacity="0.8"/>
+  </g>
+
+  <!-- Subtle line under LAAZIRI TRAVEL text area -->
+  <line x1="155" y1="415" x2="355" y2="415" stroke="url(#gold)" stroke-width="1.5" opacity="0.4"/>
+  
+  <!-- LAAZIRI text -->
+  <text x="256" y="443" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="18" font-weight="bold" letter-spacing="8" fill="url(#gold)" opacity="0.7">LAAZIRI</text>
+  
+  <!-- TRAVEL text -->
+  <text x="256" y="463" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="12" font-weight="normal" letter-spacing="12" fill="url(#gold)" opacity="0.5">TRAVEL</text>
+
+</svg>
