@@ -20,7 +20,7 @@ import os, random, string, logging
 from functools import wraps
 
 # Import configuration and utilities
-from config import config
+from .config import config
 from validators import (
     Validator, ValidationError, validate_register_data, 
     validate_login_data, validate_reservation_data
