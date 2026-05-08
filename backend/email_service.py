@@ -30,7 +30,7 @@ def send_email(to_email, subject, html_body):
         msg['Subject'] = subject
         msg.attach(MIMEText(html_body, 'html', 'utf-8'))
         
-        server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT)
+        server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT, timeout=5)
         if MAIL_USE_TLS:
             server.starttls()
         server.login(MAIL_USERNAME, MAIL_PASSWORD)
