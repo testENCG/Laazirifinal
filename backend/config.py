@@ -11,10 +11,12 @@ class Config:
     """Base configuration."""
     
     # Database
-    SQLALCHEMY_DATABASE_URI = os.environ.get(
+    _db_url = os.environ.get(
         'DATABASE_URL',
         'sqlite:///' + os.path.join(os.path.dirname(__file__), 'laazari.db')
     )
+    # Render gives postgres:// but SQLAlchemy 1.4+ requires postgresql://
+    SQLALCHEMY_DATABASE_URI = _db_url.replace('postgres://', 'postgresql://', 1) if _db_url.startswith('postgres://') else _db_url
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ECHO = os.environ.get('SQLALCHEMY_ECHO', False)
     
